@@ -1,6 +1,6 @@
 import { StatusBar } from "expo-status-bar";
 import React, { useState, useEffect, useRef } from "react";
-import { StyleSheet, View, RefreshControl, ScrollView } from "react-native";
+import { StyleSheet, View, RefreshControl, ScrollView, Platform, KeyboardAvoidingView } from "react-native";
 import CustomTabBar from "../components/units/TabBar/CustomTabBar";
 import { tabs } from "../config/tabConfig";
 import { ThemeProvider, useTheme } from "../Context/ThemeContext";
@@ -11,7 +11,8 @@ const ThemedApp = () => {
   const [activeTab, setActiveTab] = useState("Home");
   const [refreshing, setRefreshing] = useState(false);
   const navigationRef = useRef(null);
-  const profileNavigatorRef = useRef(); // 👈 Add this
+  const profileNavigatorRef = useRef();
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
 
   useEffect(() => {
     // You could add analytics tracking here or other side effects
@@ -71,7 +72,11 @@ const ThemedApp = () => {
   };
   
   return (
+    
+    
     <View style={styles.container}>
+      
+      
       <StatusBar 
         style={themeOption === 'DARK' ? "light" : "dark"} 
         backgroundColor={theme.background} 
@@ -83,12 +88,14 @@ const ThemedApp = () => {
       </View>
 
       {/* Custom Tab Bar */}
+      
       <CustomTabBar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         tabs={tabs}
         onTabDoublePress={handleTabDoublePress}
       />
+
     </View>
   );
 };
@@ -108,6 +115,5 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    marginBottom: 60,
   },
 });

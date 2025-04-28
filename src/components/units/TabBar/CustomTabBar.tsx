@@ -11,6 +11,7 @@ export default function CustomTabBar({ activeTab, setActiveTab, tabs, onTabDoubl
   const tabWidth = width / tabs.length;
   const lastPressTimeRef = useRef({});
   
+  
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: withSpring(tabPosition * tabWidth, {
       damping: 15,
