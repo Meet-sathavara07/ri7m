@@ -1,0 +1,113 @@
+import { StatusBar } from "expo-status-bar";
+import React, { useState, useEffect, useRef } from "react";
+import { StyleSheet, View, RefreshControl, ScrollView } from "react-native";
+import CustomTabBar from "../components/units/TabBar/CustomTabBar";
+import { tabs } from "../config/tabConfig";
+import { ThemeProvider, useTheme } from "../Context/ThemeContext";
+
+// Create a themed app component
+const ThemedApp = () => {
+  const { theme, themeOption } = useTheme();
+  const [activeTab, setActiveTab] = useState("Home");
+  const [refreshing, setRefreshing] = useState(false);
+  const navigationRef = useRef(null);
+  const profileNavigatorRef = useRef(); // 👈 Add this
+
+  useEffect(() => {
+    // You could add analytics tracking here or other side effects
+  }, [activeTab]); 
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    
+    // Simulate refresh - replace with actual data fetching
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1500);
+  };
+
+  const handleTabDoublePress = (tabName) => {
+    if (tabName === 'Home' || tabName === 'Activity') {
+      handleRefresh();
+    } else if (tabName === 'Profile') {
+      // Reset profile to main screen
+      if (profileNavigatorRef.current) {
+        profileNavigatorRef.current.resetToMainProfile();
+      }
+    }
+  };
+  
+
+  const renderScreen = () => {
+    const activeScreen = tabs.find((tab) => tab.name === activeTab);
+  
+    if (!activeScreen?.component) return null;
+  
+    const ScreenComponent = activeScreen.component;
+  
+    if (activeTab === 'Home' || activeTab === 'Activity') {
+      return (
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              colors={[theme.indicator]}
+              tintColor={theme.text}
+            />
+          }
+        >
+          <ScreenComponent navigationRef={navigationRef} />
+        </ScrollView>
+      );
+    }
+  
+    if (activeTab === 'Profile') {
+      return <ScreenComponent ref={profileNavigatorRef} />;
+    }
+  
+    return <ScreenComponent navigationRef={navigationRef} />;
+  };
+  
+  return (
+    <View style={styles.container}>
+      <StatusBar 
+        style={themeOption === 'DARK' ? "light" : "dark"} 
+        backgroundColor={theme.background} 
+      />
+
+      {/* Main Screen Content */}
+      <View style={[styles.content, { backgroundColor: theme.background }]}>
+        {renderScreen()}
+      </View>
+
+      {/* Custom Tab Bar */}
+      <CustomTabBar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        tabs={tabs}
+        onTabDoublePress={handleTabDoublePress}
+      />
+    </View>
+  );
+};
+
+// Root component that serves as the entry point
+export default function RootLayout() {
+  return (
+    <ThemeProvider>
+      <ThemedApp />
+    </ThemeProvider>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  content: {
+    flex: 1,
+    marginBottom: 60,
+  },
+});
