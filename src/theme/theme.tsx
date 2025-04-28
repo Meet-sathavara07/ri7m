@@ -27,6 +27,7 @@ export const lightTheme = {
     background: '#000000',
     text : '#ffffff',
     borderTopColor : 'ffffff',
+    tagBg : '00000',
 
   };
   

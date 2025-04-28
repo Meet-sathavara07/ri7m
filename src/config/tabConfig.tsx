@@ -5,6 +5,7 @@ import SearchScreen from "../app/screens/search/SearchScreen";
 import ActivityScreen from "../app/screens/activity/ActivityScreen";
 import ProfileNavigator from "../app/navigation/ProfileNavigator";
 import PostScreen from "../app/screens/post/PostScreen";
+import SearchNavigator from "../app/navigation/SearchNavigator";
 
 export const tabs = [
   { 
@@ -16,7 +17,7 @@ export const tabs = [
   { 
     name: 'Search', 
     icon: 'search', 
-    component: SearchScreen, 
+    component: SearchNavigator, 
     iconComponent: Ionicons 
   },
   { 

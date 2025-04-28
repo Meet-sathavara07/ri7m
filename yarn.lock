@@ -8039,6 +8039,11 @@ react-is@^16.7.0:
   resolved "https://registry.npmjs.org/react-is/-/react-is-16.13.1.tgz"
   integrity sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==
 
+react-native-feather@^1.1.2:
+  version "1.1.2"
+  resolved "https://registry.npmjs.org/react-native-feather/-/react-native-feather-1.1.2.tgz"
+  integrity sha512-qBc0+XegKkX4JV6ykgScasguEV3RdlbYp9IrCMnbozngOgJ7vi76pyRpb+dnZ1AZVkYsbYnpdA9JXeP7EJbMCA==
+
 "react-native-gesture-handler@>= 2.0.0", react-native-gesture-handler@~2.20.2:
   version "2.20.2"
   resolved "https://registry.npmjs.org/react-native-gesture-handler/-/react-native-gesture-handler-2.20.2.tgz"
@@ -8125,7 +8130,7 @@ react-native-svg-transformer@^1.5.0:
     "@svgr/plugin-svgo" "^8.1.0"
     path-dirname "^1.0.2"
 
-react-native-svg@^15.11.2, react-native-svg@>=12.0.0:
+react-native-svg@^15.11.2, react-native-svg@>=12.0.0, react-native-svg@>=5.3:
   version "15.11.2"
   resolved "https://registry.npmjs.org/react-native-svg/-/react-native-svg-15.11.2.tgz"
   integrity sha512-+YfF72IbWQUKzCIydlijV1fLuBsQNGMT6Da2kFlo1sh+LE3BIm/2Q7AR1zAAR6L0BFLi1WaQPLfFUC9bNZpOmw==
@@ -8164,7 +8169,7 @@ react-native-webview@*, react-native-webview@13.12.5:
     escape-string-regexp "^4.0.0"
     invariant "2.2.4"
 
-react-native@*, "react-native@^0.0.0-0 || >=0.65 <1.0", react-native@>=0.42.0, react-native@>=0.48.4, react-native@>=0.59.0, react-native@0.76.7:
+react-native@*, "react-native@^0.0.0-0 || >=0.65 <1.0", react-native@>=0.42.0, react-native@>=0.46, react-native@>=0.48.4, react-native@>=0.59.0, react-native@0.76.7:
   version "0.76.7"
   resolved "https://registry.npmjs.org/react-native/-/react-native-0.76.7.tgz"
   integrity sha512-GPJcQeO3qUi1MvuhsC2DC6tH8gJQ4uc4JWPORrdeuCGFWE3QLsN8/hiChTEvJREHLfQSV61YPI8gIOtAQ8c37g==
