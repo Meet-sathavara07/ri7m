@@ -4,7 +4,8 @@ import { useTheme } from "@/src/Context/ThemeContext";
 import { CommonActions } from "@react-navigation/native";
 import SearchScreen from "../screens/search/SearchScreen";
 import RecipeDetail from "../native/RecipeDetail";
-import Post from "../native/post";
+import Post from "../native/Recipe";
+import Recipe from "../native/Recipe";
 
 const Stack = createStackNavigator();
 
@@ -41,8 +42,8 @@ const SearchNavigator = forwardRef((props, ref) => {
         options={{ headerShown: false }}
       />
       <Stack.Screen 
-        name="Post" 
-        component={Post} 
+        name="Recipe" 
+        component={Recipe} 
         options={{ title: "Recipes" }}
       />
       <Stack.Screen 

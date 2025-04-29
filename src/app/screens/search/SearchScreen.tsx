@@ -48,7 +48,7 @@ export default function SearchScreen() {
 
       <TouchableOpacity
         style={[styles.recipeBox, { backgroundColor: theme.card }]}
-        onPress={() => navigation.navigate("Post")}
+        onPress={() => navigation.navigate("Recipe")}
       >
         <View style={styles.recipeBoxContent}>
           <Ionicons name="restaurant-outline" size={24} color={theme.icon} style={styles.recipeIcon} />
