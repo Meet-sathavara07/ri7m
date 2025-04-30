@@ -1,8 +1,16 @@
 import { StatusBar } from "expo-status-bar";
-import React, { useState, useEffect, useRef } from "react";
-import { StyleSheet, View, RefreshControl, ScrollView, Platform, KeyboardAvoidingView } from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  RefreshControl,
+  StyleSheet,
+  View,
+} from "react-native";
 import CustomTabBar from "../components/units/TabBar/CustomTabBar";
+import { SafeScrollView } from "../components/wrappers/ScreenWrappers";
 import { tabs } from "../config/tabConfig";
+import { BottomTabSafeAreaProvider } from "../Context/BottomTabSafeAreaProvider";
 import { ThemeProvider, useTheme } from "../Context/ThemeContext";
 
 // Create a themed app component
@@ -16,11 +24,11 @@ const ThemedApp = () => {
 
   useEffect(() => {
     // You could add analytics tracking here or other side effects
-  }, [activeTab]); 
+  }, [activeTab]);
 
   const handleRefresh = () => {
     setRefreshing(true);
-    
+
     // Simulate refresh - replace with actual data fetching
     setTimeout(() => {
       setRefreshing(false);
@@ -28,28 +36,26 @@ const ThemedApp = () => {
   };
 
   const handleTabDoublePress = (tabName) => {
-    if (tabName === 'Home' || tabName === 'Activity') {
+    if (tabName === "Home" || tabName === "Activity") {
       handleRefresh();
-    } else if (tabName === 'Profile') {
+    } else if (tabName === "Profile") {
       // Reset profile to main screen
       if (profileNavigatorRef.current) {
         profileNavigatorRef.current.resetToMainProfile();
       }
     }
   };
-  
 
   const renderScreen = () => {
     const activeScreen = tabs.find((tab) => tab.name === activeTab);
-  
+
     if (!activeScreen?.component) return null;
-  
+
     const ScreenComponent = activeScreen.component;
-  
-    if (activeTab === 'Home' || activeTab === 'Activity') {
+
+    if (activeTab === "Home" || activeTab === "Activity") {
       return (
-        <ScrollView
-          contentContainerStyle={{ flexGrow: 1 }}
+        <SafeScrollView
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -60,26 +66,26 @@ const ThemedApp = () => {
           }
         >
           <ScreenComponent navigationRef={navigationRef} />
-        </ScrollView>
+        </SafeScrollView>
       );
     }
-  
-    if (activeTab === 'Profile') {
+
+    if (activeTab === "Profile") {
       return <ScreenComponent ref={profileNavigatorRef} />;
     }
-  
+
     return <ScreenComponent navigationRef={navigationRef} />;
   };
-  
+
   return (
     
     
     <View style={styles.container}>
       
       
-      <StatusBar 
-        style={themeOption === 'DARK' ? "light" : "dark"} 
-        backgroundColor={theme.background} 
+      <StatusBar
+        style={themeOption === "DARK" ? "light" : "dark"}
+        backgroundColor={theme.background}
       />
 
       {/* Main Screen Content */}
@@ -104,7 +110,9 @@ const ThemedApp = () => {
 export default function RootLayout() {
   return (
     <ThemeProvider>
-      <ThemedApp />
+      <BottomTabSafeAreaProvider>
+        <ThemedApp />
+      </BottomTabSafeAreaProvider>
     </ThemeProvider>
   );
 }

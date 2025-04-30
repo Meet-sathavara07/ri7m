@@ -1,21 +1,23 @@
+/* eslint-disable import/namespace */
 import React, { forwardRef, useImperativeHandle } from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 import { useTheme } from "@/src/Context/ThemeContext";
 import { CommonActions } from "@react-navigation/native";
 import SearchScreen from "../screens/search/SearchScreen";
-import RecipeDetail from "../native/RecipeDetail";
-import Post from "../native/Recipe";
 import Recipe from "../native/Recipe";
+import RecipeDetail from "../native/RecipeDetail";
+import { useNavigation } from "expo-router";
 
 const Stack = createStackNavigator();
 
 // eslint-disable-next-line react/display-name
 const SearchNavigator = forwardRef((props, ref) => {
   const { theme } = useTheme();
+    const navigation = useNavigation();
   
   // Instead of using useNavigation, we'll use the ref prop passed to the component
   useImperativeHandle(ref, () => ({
-    resetToMainProfile: () => {
+    resetToMainSearch: () => {
       // Access navigation from the ref when the method is called
       if (ref.current && ref.current.navigation) {
         ref.current.navigation.dispatch(
@@ -29,6 +31,7 @@ const SearchNavigator = forwardRef((props, ref) => {
   }));
 
   return (
+    
     <Stack.Navigator
       screenOptions={{
         headerTintColor: theme.text,

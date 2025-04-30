@@ -5,12 +5,14 @@ import Animated, { useAnimatedStyle, withSpring } from 'react-native-reanimated'
 
 const { width } = Dimensions.get('window');
 
+// TabBar height should be consistent across the app
+export const TAB_BAR_HEIGHT = 60;
+
 export default function CustomTabBar({ activeTab, setActiveTab, tabs, onTabDoublePress }) {
   const { theme } = useTheme();
   const tabPosition = tabs.findIndex(tab => tab.name === activeTab);
   const tabWidth = width / tabs.length;
   const lastPressTimeRef = useRef({});
-  
   
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: withSpring(tabPosition * tabWidth, {
@@ -48,6 +50,7 @@ export default function CustomTabBar({ activeTab, setActiveTab, tabs, onTabDoubl
       { 
         backgroundColor: theme.tabBar,
         borderTopColor: theme.borderTopColor,
+        height: TAB_BAR_HEIGHT,
       }
     ]}>
       <Animated.View 
@@ -83,7 +86,6 @@ export default function CustomTabBar({ activeTab, setActiveTab, tabs, onTabDoubl
 const styles = StyleSheet.create({
   tabBar: {
     flexDirection: 'row',
-    height: 60,
     position: 'absolute',
     bottom: 0,
     left: 0,
@@ -93,6 +95,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
+    zIndex: 100, // Ensure the tab bar is always on top
   },
   tabButton: {
     flex: 1,

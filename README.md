@@ -25,26 +25,170 @@ In the output, you'll find options to open the app in a
 
 You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
 
-## Get a fresh project
+# Implementation Guide for Tab Bar Safe Area
 
-When you're ready, run:
+This guide explains how to implement a centralized solution to prevent content from appearing behind the bottom tab bar.
 
-```bash
-npm run reset-project
+## Core Concept
+
+Instead of modifying each screen individually, we've created a context-based solution that:
+
+1. Provides consistent spacing across all screens
+2. Requires minimal changes to your existing components
+3. Works with both Expo and React Native CLI
+4. Is flexible enough to handle different types of content (scrollable, fixed, etc.)
+
+## Implementation Steps
+
+### 1. Setup Provider
+
+First, wrap your app with the `BottomTabSafeAreaProvider`:
+
+```jsx
+// In RootLayout.js
+import { BottomTabSafeAreaProvider } from "../components/wrappers/BottomTabSafeAreaProvider";
+
+export default function RootLayout() {
+  return (
+    <ThemeProvider>
+      <BottomTabSafeAreaProvider>
+        <ThemedApp />
+      </BottomTabSafeAreaProvider>
+    </ThemeProvider>
+  );
+}
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### 2. Use Pre-made Wrapper Components
 
-## Learn more
+For most screens, simply replace your container components with our safe area wrappers:
 
-To learn more about developing your project with Expo, look at the following resources:
+```jsx
+// Before:
+<View style={styles.container}>
+  {/* Your content */}
+</View>
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+// After:
+import { SafeScreenView } from "@/src/components/wrappers/ScreenWrappers";
 
-## Join the community
+<SafeScreenView style={styles.container}>
+  {/* Your content */}
+</SafeScreenView>
+```
 
-Join our community of developers creating universal apps.
+For scrollable content:
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```jsx
+// Before:
+<ScrollView contentContainerStyle={styles.scrollContainer}>
+  {/* Your content */}
+</ScrollView>
+
+// After:
+import { SafeScrollView } from "@/src/components/wrappers/ScreenWrappers";
+
+<SafeScrollView contentContainerStyle={styles.scrollContainer}>
+  {/* Your content */}
+</SafeScrollView>
+```
+
+For lists:
+
+```jsx
+// Before:
+<FlatList
+  data={data}
+  contentContainerStyle={styles.listContainer}
+  renderItem={renderItem}
+/>
+
+// After:
+import { SafeFlatList } from "@/src/components/wrappers/ScreenWrappers";
+
+<SafeFlatList
+  data={data}
+  contentContainerStyle={styles.listContainer}
+  renderItem={renderItem}
+/>
+```
+
+### 3. For Navigator Components (like ProfileNavigator)
+
+When working with navigator components, wrap the root view in your navigator:
+
+```jsx
+// In your navigator component
+import { SafeScreenView } from '@/src/components/wrappers/ScreenWrappers';
+
+const ProfileNavigator = forwardRef((props, ref) => {
+  // Your navigator logic...
+  
+  return (
+    <SafeScreenView style={{ backgroundColor: theme.background }}>
+      {renderScreen()}
+    </SafeScreenView>
+  );
+});
+```
+
+### 4. For Bottom-Fixed Elements
+
+For elements that should be fixed at the bottom but above the tab bar:
+
+```jsx
+import { SafeBottomView } from "@/src/components/wrappers/ScreenWrappers";
+
+<SafeBottomView style={styles.bottomButtons}>
+  <TouchableOpacity>
+    <Text>Save</Text>
+  </TouchableOpacity>
+</SafeBottomView>
+```
+
+## Advanced Usage (Optional)
+
+### Using the HOC for Existing Components
+
+If you want to wrap existing components without modifying them directly:
+
+```jsx
+// In a separate file
+import MyScreen from './MyScreen';
+import { withSafeArea } from '../components/wrappers/withSafeArea';
+
+export default withSafeArea(MyScreen);
+```
+
+### Using the Context Hook Directly
+
+If you need more control, you can use the hook directly:
+
+```jsx
+import { useBottomTabSafeArea } from '@/src/components/wrappers/BottomTabSafeAreaProvider';
+
+function MyCustomComponent() {
+  const { styles: safeAreaStyles, tabBarHeight } = useBottomTabSafeArea();
+  
+  return (
+    <View style={[styles.container, safeAreaStyles.container]}>
+      {/* Custom logic using tab bar height */}
+      <View style={{ marginBottom: tabBarHeight }}>
+        {/* Your content */}
+      </View>
+    </View>
+  );
+}
+```
+
+## Key Files
+
+1. `BottomTabSafeAreaProvider.js` - Context provider for tab bar spacing
+2. `ScreenWrappers.js` - Ready-to-use wrapper components
+3. `withSafeArea.js` - HOC for wrapping existing components
+
+## Compatibility Notes
+
+- Works with both Expo and React Native CLI
+- Compatible with React Navigation (if you add it later)
+- Handles both light and dark themes through your ThemeProvider

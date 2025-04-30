@@ -1,111 +1,243 @@
-import React from "react";
-import { View, ScrollView, Image, StyleSheet, TouchableOpacity, Text, Share } from "react-native";
+import React, { useState } from "react";
+import {
+  View,
+  ScrollView,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  Text,
+  Share,
+  ActivityIndicator,
+  Animated,
+  Dimensions,
+} from "react-native";
 import { ThemedText } from "@/src/components/ThemedText";
 import { useTheme } from "@/src/Context/ThemeContext";
 import { Ionicons } from "@expo/vector-icons";
 import {
-    SafeAreaProvider,
-    useSafeAreaInsets,
-  } from 'react-native-safe-area-context';
-  
+  SafeAreaProvider,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
+import * as Haptics from "expo-haptics";
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import { SafeScreenView } from "@/src/components/wrappers/ScreenWrappers";
+
+// Sub-components for better organization
+const RecipeImage = ({ uri, onShare }) => {
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const { theme } = useTheme();
+
+  return (
+    <View style={styles.imageContainer}>
+      {isLoading && (
+        <View
+          style={[styles.imagePlaceholder, { backgroundColor: theme.card }]}
+        >
+          <ActivityIndicator size="large" color={theme.accent} />
+        </View>
+      )}
+      {error ? (
+        <View
+          style={[styles.imagePlaceholder, { backgroundColor: theme.card }]}
+        >
+          <Ionicons name="image-outline" size={50} color={theme.icon} />
+        </View>
+      ) : (
+        <Image
+          source={{ uri }}
+          style={styles.image}
+          onLoad={() => setIsLoading(false)}
+          onError={() => setError(true)}
+          accessibilityLabel="Recipe image"
+        />
+      )}
+      <TouchableOpacity
+        style={styles.shareButton}
+        onPress={onShare}
+        accessibilityLabel="Share recipe"
+        accessibilityHint="Shares this recipe with others"
+      >
+        <Ionicons name="share-social" size={22} color="white" />
+      </TouchableOpacity>
+    </View>
+  );
+};
+
+const StatsCard = ({ prepTime, cookTime, rating, reviewCount, servings }) => {
+  const { theme } = useTheme();
+
+  return (
+    <View style={[styles.statsContainer, { backgroundColor: theme.card }]}>
+      <View style={styles.statItem}>
+        <Ionicons name="time-outline" size={22} color={theme.icon} />
+        <View style={styles.statText}>
+          <ThemedText style={styles.statValue}>
+            {prepTime + cookTime}
+          </ThemedText>
+          <ThemedText style={styles.statLabel}>minutes</ThemedText>
+        </View>
+      </View>
+
+      <View style={[styles.statDivider, { backgroundColor: theme.border }]} />
+
+      <View style={styles.statItem}>
+        <Ionicons name="star-outline" size={22} color={theme.icon} />
+        <View style={styles.statText}>
+          <ThemedText style={styles.statValue}>{rating.toFixed(1)}</ThemedText>
+          <ThemedText style={styles.statLabel}>
+            {reviewCount} reviews
+          </ThemedText>
+        </View>
+      </View>
+
+      <View style={[styles.statDivider, { backgroundColor: theme.border }]} />
+
+      <View style={styles.statItem}>
+        <Ionicons name="restaurant-outline" size={22} color={theme.icon} />
+        <View style={styles.statText}>
+          <ThemedText style={styles.statValue}>{servings}</ThemedText>
+          <ThemedText style={styles.statLabel}>servings</ThemedText>
+        </View>
+      </View>
+    </View>
+  );
+};
+
 export default function RecipeDetail({ route }) {
   const { recipe } = route.params;
   const { theme } = useTheme();
-
+  const [isSaved, setIsSaved] = useState(false);
+  const fadeAnim = useState(new Animated.Value(0))[0];
   const insets = useSafeAreaInsets();
+  const { width } = Dimensions.get("window");
 
+  React.useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
+  }, []);
 
   const handleShare = async () => {
     try {
       await Share.share({
-        message: `Check out this delicious ${recipe.name} recipe! It takes ${recipe.prepTimeMinutes + recipe.cookTimeMinutes} minutes to make.`,
+        message: `Check out this delicious ${recipe.name} recipe! It takes ${
+          recipe.prepTimeMinutes + recipe.cookTimeMinutes
+        } minutes to make.`,
         title: recipe.name,
+        url: recipe.image, // Some platforms support URL
       });
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (error) {
-      console.error('Error sharing recipe:', error);
+      console.error("Error sharing recipe:", error);
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    }
+  };
+
+  const toggleSave = async () => {
+    try {
+      // Here you would typically call an API or update your state management
+      setIsSaved(!isSaved);
+      await Haptics.impactAsync(
+        isSaved
+          ? Haptics.ImpactFeedbackStyle.Light
+          : Haptics.ImpactFeedbackStyle.Medium
+      );
+    } catch (error) {
+      console.error("Error saving recipe:", error);
     }
   };
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: theme.background }]}>
-      <View style={styles.imageContainer}>
-        <Image source={{ uri: recipe.image }} style={styles.image} />
-        <TouchableOpacity 
-          style={styles.shareButton}
-          onPress={handleShare}
-        >
-          <Ionicons name="share-social" size={22} color="white" />
-        </TouchableOpacity>
-      </View>
+    
+    <Animated.ScrollView
+      style={[
+        styles.container,
+        {
+          backgroundColor: theme.background,
+          opacity: fadeAnim,
+        },
+      ]}
+      contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
+    >
+      <RecipeImage uri={recipe.image} onShare={handleShare} />
 
-      <View style={styles.content}>
+      <SafeScreenView style={styles.content}>
         <View style={styles.titleSection}>
           <ThemedText style={styles.title}>{recipe.name}</ThemedText>
-          
+
           <View style={styles.tagContainer}>
             {Array.isArray(recipe.mealType) ? (
               recipe.mealType.map((type, index) => (
-                <View key={index} style={[styles.tag, { backgroundColor: theme.tagBg || '#e0e0e0' }]}>
+                <View
+                  key={index}
+                  style={[
+                    styles.tag,
+                    { backgroundColor: theme.tagBg || "#e0e0e0" },
+                  ]}
+                >
                   <ThemedText style={styles.tagText}>{type}</ThemedText>
                 </View>
               ))
             ) : (
-              <View style={[styles.tag, { backgroundColor: theme.tagBg || '#e0e0e0' }]}>
-                <ThemedText style={styles.tagText}>{recipe.mealType}</ThemedText>
+              <View
+                style={[
+                  styles.tag,
+                  { backgroundColor: theme.tagBg || "#e0e0e0" },
+                ]}
+              >
+                <ThemedText style={styles.tagText}>
+                  {recipe.mealType}
+                </ThemedText>
               </View>
             )}
             {recipe.cuisine && (
-              <View style={[styles.tag, { backgroundColor: theme.tagBg || '#e0e0e0' }]}>
+              <View
+                style={[
+                  styles.tag,
+                  { backgroundColor: theme.tagBg || "#e0e0e0" },
+                ]}
+              >
                 <ThemedText style={styles.tagText}>{recipe.cuisine}</ThemedText>
               </View>
             )}
           </View>
         </View>
 
-        <View style={[styles.statsContainer, { backgroundColor: theme.card }]}>
-          <View style={styles.statItem}>
-            <Ionicons name="time-outline" size={22} color={theme.icon} />
-            <View style={styles.statText}>
-              <ThemedText style={styles.statValue}>{recipe.prepTimeMinutes + recipe.cookTimeMinutes}</ThemedText>
-              <ThemedText style={styles.statLabel}>minutes</ThemedText>
-            </View>
-          </View>
-          
-          <View style={[styles.statDivider, { backgroundColor: theme.border }]} />
-          
-          <View style={styles.statItem}>
-            <Ionicons name="star-outline" size={22} color={theme.icon} />
-            <View style={styles.statText}>
-              <ThemedText style={styles.statValue}>{recipe.rating.toFixed(1)}</ThemedText>
-              <ThemedText style={styles.statLabel}>{recipe.reviewCount} reviews</ThemedText>
-            </View>
-          </View>
-          
-          <View style={[styles.statDivider, { backgroundColor: theme.border }]} />
-          
-          <View style={styles.statItem}>
-            <Ionicons name="restaurant-outline" size={22} color={theme.icon} />
-            <View style={styles.statText}>
-              <ThemedText style={styles.statValue}>{recipe.servings}</ThemedText>
-              <ThemedText style={styles.statLabel}>servings</ThemedText>
-            </View>
-          </View>
-        </View>
+        <StatsCard
+          prepTime={recipe.prepTimeMinutes}
+          cookTime={recipe.cookTimeMinutes}
+          rating={recipe.rating}
+          reviewCount={recipe.reviewCount}
+          servings={recipe.servings}
+        />
 
         <View style={[styles.timeSection, { backgroundColor: theme.card }]}>
           <View style={styles.timeItem}>
             <ThemedText style={styles.timeLabel}>Prep Time</ThemedText>
-            <ThemedText style={styles.timeValue}>{recipe.prepTimeMinutes} min</ThemedText>
+            <ThemedText style={styles.timeValue}>
+              {recipe.prepTimeMinutes} min
+            </ThemedText>
           </View>
-          <View style={[styles.timeDivider, { backgroundColor: theme.border }]} />
+          <View
+            style={[styles.timeDivider, { backgroundColor: theme.border }]}
+          />
           <View style={styles.timeItem}>
             <ThemedText style={styles.timeLabel}>Cook Time</ThemedText>
-            <ThemedText style={styles.timeValue}>{recipe.cookTimeMinutes} min</ThemedText>
+            <ThemedText style={styles.timeValue}>
+              {recipe.cookTimeMinutes} min
+            </ThemedText>
           </View>
-          <View style={[styles.timeDivider, { backgroundColor: theme.border }]} />
+          <View
+            style={[styles.timeDivider, { backgroundColor: theme.border }]}
+          />
           <View style={styles.timeItem}>
             <ThemedText style={styles.timeLabel}>Total Time</ThemedText>
-            <ThemedText style={styles.timeValue}>{recipe.prepTimeMinutes + recipe.cookTimeMinutes} min</ThemedText>
+            <ThemedText style={styles.timeValue}>
+              {recipe.prepTimeMinutes + recipe.cookTimeMinutes} min
+            </ThemedText>
           </View>
         </View>
 
@@ -113,8 +245,13 @@ export default function RecipeDetail({ route }) {
           <ThemedText style={styles.sectionTitle}>Ingredients</ThemedText>
           <View style={[styles.card, { backgroundColor: theme.card }]}>
             {recipe.ingredients.map((ingredient, index) => (
-              <View key={index} style={styles.ingredientItem}>
-                <View style={[styles.bullet, { backgroundColor: theme.accent || '#FF6B6B' }]} />
+              <View key={`ingredient-${index}`} style={styles.ingredientItem}>
+                <View
+                  style={[
+                    styles.bullet,
+                    { backgroundColor: theme.accent || "#FF6B6B" },
+                  ]}
+                />
                 <ThemedText style={styles.ingredientText}>
                   {ingredient}
                 </ThemedText>
@@ -127,8 +264,13 @@ export default function RecipeDetail({ route }) {
           <ThemedText style={styles.sectionTitle}>Instructions</ThemedText>
           <View style={[styles.card, { backgroundColor: theme.card }]}>
             {recipe.instructions.map((instruction, index) => (
-              <View key={index} style={styles.instructionItem}>
-                <View style={[styles.instructionNumberContainer, { backgroundColor: theme.accent || '#FF6B6B' }]}>
+              <View key={`instruction-${index}`} style={styles.instructionItem}>
+                <View
+                  style={[
+                    styles.instructionNumberContainer,
+                    { backgroundColor: theme.accent || "#FF6B6B" },
+                  ]}
+                >
                   <Text style={styles.instructionNumber}>{index + 1}</Text>
                 </View>
                 <ThemedText style={styles.instructionText}>
@@ -150,14 +292,30 @@ export default function RecipeDetail({ route }) {
           </View>
         )}
 
-        <TouchableOpacity 
-          style={[styles.saveButton, { backgroundColor: theme.accent || '#FF6B6B' }]}
+        <TouchableOpacity
+          style={[
+            styles.saveButton,
+            {
+              backgroundColor: isSaved
+                ? theme.secondaryAccent || "#4CAF50"
+                : theme.accent || "#FF6B6B",
+            },
+          ]}
+          onPress={toggleSave}
+          activeOpacity={0.8}
         >
-          <Ionicons name="bookmark-outline" size={20} color="white" style={styles.saveIcon} />
-          <Text style={styles.saveButtonText}>Save Recipe</Text>
+          <Ionicons
+            name={isSaved ? "bookmark" : "bookmark-outline"}
+            size={20}
+            color="white"
+            style={styles.saveIcon}
+          />
+          <Text style={styles.saveButtonText}>
+            {isSaved ? "Recipe Saved" : "Save Recipe"}
+          </Text>
         </TouchableOpacity>
-      </View>
-    </ScrollView>
+      </SafeScreenView>
+    </Animated.ScrollView>
   );
 }
 
@@ -174,8 +332,13 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
   },
+  imagePlaceholder: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   shareButton: {
-    position: 'absolute',
+    position: "absolute",
     right: 16,
     bottom: 16,
     backgroundColor: 'rgba(0,0,0,0.5)',
@@ -187,9 +350,6 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 20,
-    paddingBottom: 75,
-
-    
   },
   titleSection: {
     marginBottom: 20,
@@ -198,14 +358,16 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: "bold",
     marginBottom: 8,
+    lineHeight: 32,
   },
   tagContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
+    marginTop: 8,
   },
   tag: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     borderRadius: 20,
     marginRight: 8,
     marginBottom: 8,
@@ -221,6 +383,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     padding: 16,
     borderRadius: 12,
+    
   },
   statItem: {
     flex: 1,
@@ -249,6 +412,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     padding: 16,
     borderRadius: 12,
+
   },
   timeItem: {
     flex: 1,
@@ -281,7 +445,7 @@ const styles = StyleSheet.create({
   },
   ingredientItem: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     marginBottom: 10,
   },
   bullet: {
@@ -289,10 +453,12 @@ const styles = StyleSheet.create({
     height: 8,
     borderRadius: 4,
     marginRight: 12,
+    marginTop: 7,
   },
   ingredientText: {
     fontSize: 16,
     flex: 1,
+    lineHeight: 24,
   },
   instructionItem: {
     flexDirection: "row",
@@ -315,7 +481,7 @@ const styles = StyleSheet.create({
   instructionText: {
     fontSize: 16,
     flex: 1,
-    lineHeight: 22,
+    lineHeight: 24,
   },
   difficultyText: {
     fontSize: 16,
@@ -333,18 +499,24 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   saveButton: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
     padding: 16,
     borderRadius: 12,
+    marginTop: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
   saveIcon: {
     marginRight: 10,
   },
   saveButtonText: {
-    color: 'white',
+    color: "white",
     fontSize: 16,
-    fontWeight: '600',
-  }
+    fontWeight: "600",
+  },
 });
