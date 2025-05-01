@@ -1,6 +1,6 @@
 // src/components/ThemeToggle.js
 import React from 'react';
-import { TouchableOpacity, StyleSheet, Text, View } from 'react-native';
+import { TouchableOpacity, StyleSheet, Text, View, Platform } from 'react-native';
 import { useTheme } from '../Context/ThemeContext';
 import { Sun, Moon, Smartphone, Check } from 'react-native-feather';
 
@@ -9,7 +9,7 @@ export const ThemeToggle = () => {
   const { primary, background, text, iconActive } = theme;
   
   return (
-    <View style={[styles.container, { backgroundColor: background }]}>
+    <View style={[styles.container,styles.boxShadow, { backgroundColor: background }]}>
       <Text style={[styles.heading, { color: text }]}>Set Theme</Text>
       
       {/* Light Theme Option */}
@@ -127,5 +127,18 @@ const styles = StyleSheet.create({
     marginTop: 16,
     fontSize: 14,
     opacity: 0.8,
-  }
+  },
+  boxShadow: {
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 6,
+      },
+      android: {
+        elevation: 8,
+      },
+    }),
+  },
 });

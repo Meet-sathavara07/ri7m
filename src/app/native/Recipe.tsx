@@ -1,23 +1,21 @@
 import { ThemedText } from "@/src/components/ThemedText";
 import { useTheme } from "@/src/Context/ThemeContext";
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Text,
   TouchableOpacity,
-  StyleSheet,
   FlatList,
   View,
   Image,
   ActivityIndicator,
   TextInput,
-  ScrollView,
   Platform,
-  StatusBar,
+  StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
 import { SafeScreenView } from "../../components/wrappers/ScreenWrappers";
-
+import CardShadowWrapper from "@/src/components/ui/CardShadowWrapper";
 
 // Utility function to shuffle an array (Fisher-Yates algorithm)
 const shuffleArray = (array) => {
@@ -29,13 +27,14 @@ const shuffleArray = (array) => {
   }
   return newArray;
 };
+
 export default function Recipe({ route, navigation }) {
   const [recipes, setRecipes] = useState([]);
   const [filteredRecipes, setFilteredRecipes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchInput, setSearchInput] = useState("");
   const { theme } = useTheme();
-  
+
   // Store preprocessed recipes with stable shuffled tags
   const [processedRecipes, setProcessedRecipes] = useState([]);
 
@@ -50,33 +49,33 @@ export default function Recipe({ route, navigation }) {
     const fetchRecipes = async () => {
       try {
         const response = await axios.get("https://dummyjson.com/recipes");
-        
+
         // Process recipes to create stable shuffled tags
-        const processed = response.data.recipes.map(recipe => {
+        const processed = response.data.recipes.map((recipe) => {
           // Start with cuisine as the first item
           const cuisine = recipe.cuisine;
-          
+
           // Create array of mealTypes and tags without including cuisine
           const mealTypes = Array.isArray(recipe.mealType) ? recipe.mealType : [recipe.mealType];
           const tags = (recipe.tags || []).filter(tag => tag !== cuisine); // Remove cuisine from tags if present
-          
+
           // Combine mealTypes and tags and shuffle them together
           const otherTags = [...mealTypes, ...tags].filter(Boolean); // Remove empty values
           const shuffledOtherTags = shuffleArray(otherTags);
-          
+
           // Combine cuisine with shuffled tags
           const allTags = cuisine ? [cuisine, ...shuffledOtherTags] : shuffledOtherTags;
-          
+
           return {
             ...recipe,
             // Store the pre-shuffled tags string to avoid re-shuffling on renders
             metaTagsString: allTags.join(", ")
           };
         });
-        
+
         setRecipes(processed);
         setProcessedRecipes(processed);
-        
+
         // Initially filter with the search query from route params
         filterRecipes(processed, searchQuery);
       } catch (error) {
@@ -184,62 +183,69 @@ export default function Recipe({ route, navigation }) {
   };
 
   const renderItems = ({ item }) => (
-    <TouchableOpacity
+    <CardShadowWrapper style={{ backgroundColor: theme.background }}>
+       <TouchableOpacity
       style={[
         styles.recipeCard,
         {
-          backgroundColor: theme.card,
+          backgroundColor: theme.background,
+          borderColor: theme.border,
         },
       ]}
       onPress={() => handleRecipePress(item)}
-      activeOpacity={0.8}
+      activeOpacity={0.7}
     >
-      <Image
-        source={{ uri: item.image }}
-        style={styles.recipeImage}
-        resizeMode="cover"
-      />
+      <View>
+        <Image
+          source={{ uri: item.image }}
+          style={styles.recipeImage}
+          resizeMode="cover"
+        />
 
-      <View style={styles.recipeContent}>
-        <View style={styles.recipeHeader}>
-          <ThemedText style={styles.recipeName} numberOfLines={1}>
-            {item.name}
-          </ThemedText>
-        </View>
-
-        <View style={styles.ratingContainer}>
-          <ThemedText style={styles.ratingText}>
-            {item.rating.toFixed(1)}{" "}
-          </ThemedText>
-          <View style={styles.starWrapper}>{renderStars(item.rating)}</View>
-          <ThemedText style={styles.ratingText}>
-            {" "}
-            ({item.reviewCount})
-          </ThemedText>
-        </View>
-
-        <View style={styles.recipeMeta}>
-          <View style={styles.metaItem}>
-            <Ionicons name="time-outline" size={14} color={theme.icon} />
-            <ThemedText style={styles.metaText}>
-              {item.prepTimeMinutes + item.cookTimeMinutes} min
+        <View style={styles.recipeContent}>
+          <View style={styles.recipeHeader}>
+            <ThemedText style={styles.recipeName} numberOfLines={1}>
+              {item.name}
             </ThemedText>
           </View>
 
-          <View style={[styles.metaItem, { flex: 1, minWidth: 0 }]}>
-            <Ionicons name="restaurant-outline" size={14} color={theme.icon} />
-            <ThemedText
-              style={[styles.metaText, { flex: 1 }]}
-              numberOfLines={1}
-              ellipsizeMode="tail"
-            >
-              {/* Use the pre-generated stable tags string */}
-              {item.metaTagsString}
+          <View style={styles.ratingContainer}>
+            <ThemedText style={styles.ratingText}>
+              {item.rating.toFixed(1)}{" "}
             </ThemedText>
+            <View style={styles.starWrapper}>{renderStars(item.rating)}</View>
+            <ThemedText style={styles.ratingText}>
+              {" "}
+              ({item.reviewCount})
+            </ThemedText>
+          </View>
+
+          <View style={styles.recipeMeta}>
+            <View style={styles.metaItem}>
+              <Ionicons name="time-outline" size={14} color={theme.icon} />
+              <ThemedText style={styles.metaText}>
+                {item.prepTimeMinutes + item.cookTimeMinutes} min
+              </ThemedText>
+            </View>
+
+            <View style={[styles.metaItem, { flex: 1, minWidth: 0 }]}>
+            <Ionicons name="restaurant-outline" size={14} color={theme.icon} />
+              <ThemedText
+                style={[styles.metaText, { flex: 1 }]}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
+                {/* Use the pre-generated stable tags string */}
+                {item.metaTagsString}
+              </ThemedText>
+            </View>
           </View>
         </View>
       </View>
     </TouchableOpacity>
+    </CardShadowWrapper>
+
+   
   );
 
   const ListEmptyComponent = () => (
@@ -260,7 +266,12 @@ export default function Recipe({ route, navigation }) {
         <ThemedText style={styles.headerTitle}>Discover Recipes</ThemedText>
       </View>
 
-      <View style={[styles.searchContainer, { borderColor: theme.border }]}>
+      <View 
+        style={[
+          styles.searchContainer, 
+          { borderColor: theme.border, backgroundColor: theme.background }
+        ]}
+      >
         <Ionicons
           name="search"
           size={18}
@@ -282,6 +293,7 @@ export default function Recipe({ route, navigation }) {
               setSearchInput("");
               filterRecipes(processedRecipes, "");
             }}
+            hitSlop={{top: 10, right: 10, bottom: 10, left: 10}}
           >
             <Ionicons name="close-circle" size={20} color={theme.icon} />
           </TouchableOpacity>
@@ -290,7 +302,7 @@ export default function Recipe({ route, navigation }) {
 
       {isLoading ? (
         <View style={styles.loaderContainer}>
-          <ActivityIndicator size="large" color={theme.accent} />
+          <ActivityIndicator size="large" color={theme.loading} />
           <ThemedText style={styles.loadingText}>
             Loading delicious recipes...
           </ThemedText>
@@ -302,14 +314,15 @@ export default function Recipe({ route, navigation }) {
               {filteredRecipes.length}{" "}
               {filteredRecipes.length === 1 ? "Recipe" : "Recipes"} Found
             </ThemedText>
-            <TouchableOpacity style={styles.filterButton}>
-              <Ionicons name="filter" size={18} color={theme.accent} />
-              <ThemedText style={[styles.filterText, { color: theme.accent }]}>
+            <TouchableOpacity style={[styles.filterButton ,{ borderColor: theme.border }]}>
+            
+              <Ionicons name="filter" size={18} color={theme.icon} />
+              <ThemedText >
                 Filters
               </ThemedText>
             </TouchableOpacity>
           </View>
-
+        
           <FlatList
             data={filteredRecipes}
             renderItem={renderItems}
@@ -317,12 +330,16 @@ export default function Recipe({ route, navigation }) {
             contentContainerStyle={styles.recipeList}
             ListEmptyComponent={ListEmptyComponent}
             showsVerticalScrollIndicator={false}
+            initialNumToRender={4}
+            maxToRenderPerBatch={8}
+            windowSize={5}
           />
         </>
       )}
     </SafeScreenView>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -332,7 +349,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     paddingTop: Platform.OS === "ios" ? 10 : 0, // Only add extra padding for iOS if needed
   },
-
   headerTitle: {
     fontSize: 28,
     fontWeight: "700",
@@ -351,7 +367,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     height: 50,
     marginBottom: 20,
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
   },
   searchIcon: {
     marginRight: 10,
@@ -401,18 +416,19 @@ const styles = StyleSheet.create({
   recipeCard: {
     borderRadius: 16,
     overflow: "hidden",
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: "#ddd",
-    backgroundColor: "#fff",
+    borderWidth: 0.1,
+   
     height: 300,
   },
+
   recipeImage: {
     width: "100%",
-    height: 180,
+    height: '70%',
   },
   recipeContent: {
-    padding: 14,
+    padding: 10,  
+      height: '25%',
+
   },
   recipeHeader: {
     flexDirection: "row",
@@ -425,7 +441,6 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: 12,
   },
-
   recipeMeta: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -515,27 +530,5 @@ const styles = StyleSheet.create({
   difficultyText: {
     fontSize: 14,
     opacity: 0.8,
-  },
-  difficultyContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 8,
-  },
-  difficultyLevel: (level) => ({
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12, // More rounded corners
-    backgroundColor:
-      level === "Easy"
-        ? "rgba(76, 175, 80, 0.15)"
-        : level === "Medium"
-        ? "rgba(255, 193, 7, 0.15)"
-        : "rgba(244, 67, 54, 0.15)",
-  }),
-  difficultyLevelText: (level) => ({
-    fontSize: 13,
-    fontWeight: "600",
-    color:
-      level === "Easy" ? "#4CAF50" : level === "Medium" ? "#FFA000" : "#F44336",
-  }),
-});
+  }
+})
