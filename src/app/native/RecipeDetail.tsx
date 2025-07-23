@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   Animated,
   Dimensions,
+  Platform,
 } from "react-native";
 import { ThemedText } from "@/src/components/ThemedText";
 import { useTheme } from "@/src/Context/ThemeContext";
@@ -19,8 +20,11 @@ import {
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { SafeScreenView } from "@/src/components/wrappers/ScreenWrappers";
+import { ActionButtons } from "@/src/components/ui/Button/CircularButtons";
+import CardShadowWrapper from "@/src/components/ui/CardShadowWrapper";
+import RecipeActions from "@/src/components/ui/Button/RecipeActions";
+import PriceDisplay from "@/src/components/templates/price/PriceDisplay";
 
 // Sub-components for better organization
 const RecipeImage = ({ uri, onShare }) => {
@@ -151,7 +155,6 @@ export default function RecipeDetail({ route }) {
   };
 
   return (
-    
     <Animated.ScrollView
       style={[
         styles.container,
@@ -173,34 +176,27 @@ export default function RecipeDetail({ route }) {
               recipe.mealType.map((type, index) => (
                 <View
                   key={index}
-                  style={[
-                    styles.tag,
-                    { backgroundColor: theme.tagBg || "#e0e0e0" },
-                  ]}
+                  style={[styles.tag, { backgroundColor: theme.primary }]}
                 >
-                  <ThemedText style={styles.tagText}>{type}</ThemedText>
+                  <ThemedText style={[styles.tagText, { color: theme.instructionNumber }]}>{type}</ThemedText>
                 </View>
               ))
             ) : (
-              <View
-                style={[
-                  styles.tag,
-                  { backgroundColor: theme.tagBg || "#e0e0e0" },
-                ]}
-              >
-                <ThemedText style={styles.tagText}>
+              <View style={[styles.tag, { backgroundColor: theme.bullet }]}>
+                <ThemedText
+                  style={[styles.tagText, { color: theme.instructionNumber }]}
+                >
                   {recipe.mealType}
                 </ThemedText>
               </View>
             )}
             {recipe.cuisine && (
-              <View
-                style={[
-                  styles.tag,
-                  { backgroundColor: theme.tagBg || "#e0e0e0" },
-                ]}
-              >
-                <ThemedText style={styles.tagText}>{recipe.cuisine}</ThemedText>
+              <View style={[styles.tag, { backgroundColor: theme.bullet }]}>
+                <ThemedText
+                  style={[styles.tagText, { color: theme.instructionNumber }]}
+                >
+                  {recipe.cuisine}
+                </ThemedText>
               </View>
             )}
           </View>
@@ -247,10 +243,7 @@ export default function RecipeDetail({ route }) {
             {recipe.ingredients.map((ingredient, index) => (
               <View key={`ingredient-${index}`} style={styles.ingredientItem}>
                 <View
-                  style={[
-                    styles.bullet,
-                    { backgroundColor: theme.accent || "#FF6B6B" },
-                  ]}
+                  style={[styles.bullet, { backgroundColor: theme.bullet }]}
                 />
                 <ThemedText style={styles.ingredientText}>
                   {ingredient}
@@ -268,10 +261,17 @@ export default function RecipeDetail({ route }) {
                 <View
                   style={[
                     styles.instructionNumberContainer,
-                    { backgroundColor: theme.accent || "#FF6B6B" },
+                    { backgroundColor: theme.bullet },
                   ]}
                 >
-                  <Text style={styles.instructionNumber}>{index + 1}</Text>
+                  <Text
+                    style={[
+                      styles.instructionNumber,
+                      { color: theme.instructionNumber },
+                    ]}
+                  >
+                    {index + 1}
+                  </Text>
                 </View>
                 <ThemedText style={styles.instructionText}>
                   {instruction}
@@ -291,29 +291,21 @@ export default function RecipeDetail({ route }) {
             </View>
           </View>
         )}
-
-        <TouchableOpacity
-          style={[
-            styles.saveButton,
-            {
-              backgroundColor: isSaved
-                ? theme.secondaryAccent || "#4CAF50"
-                : theme.accent || "#FF6B6B",
-            },
-          ]}
-          onPress={toggleSave}
-          activeOpacity={0.8}
-        >
-          <Ionicons
-            name={isSaved ? "bookmark" : "bookmark-outline"}
-            size={20}
-            color="white"
-            style={styles.saveIcon}
+        <View style={styles.boxShadow}>
+          {/* <PriceDisplay
+            price={recipe.price}
+            formatOptions={{
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 0,
+            }}
+          /> */}
+          <RecipeActions
+            recipe={recipe}
+            onSave={toggleSave}
+            isSaved={isSaved}
+            onShare={handleShare}
           />
-          <Text style={styles.saveButtonText}>
-            {isSaved ? "Recipe Saved" : "Save Recipe"}
-          </Text>
-        </TouchableOpacity>
+        </View>
       </SafeScreenView>
     </Animated.ScrollView>
   );
@@ -341,12 +333,12 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 16,
     bottom: 16,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: "rgba(0,0,0,0.5)",
     width: 40,
     height: 40,
     borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   content: {
     padding: 20,
@@ -383,7 +375,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     padding: 16,
     borderRadius: 12,
-    
   },
   statItem: {
     flex: 1,
@@ -412,7 +403,6 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     padding: 16,
     borderRadius: 12,
-
   },
   timeItem: {
     flex: 1,
@@ -426,6 +416,19 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginBottom: 4,
     opacity: 0.7,
+  },
+  boxShadow: {
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 6,
+      },
+      android: {
+        elevation: 8,
+      },
+    }),
   },
   timeValue: {
     fontSize: 16,
@@ -474,7 +477,6 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   instructionNumber: {
-    color: "white",
     fontSize: 14,
     fontWeight: "bold",
   },
@@ -499,11 +501,10 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   saveButton: {
-    flexDirection: "row",
+    flexDirection: "column",
     justifyContent: "center",
     alignItems: "center",
     padding: 16,
-    borderRadius: 12,
     marginTop: 8,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },

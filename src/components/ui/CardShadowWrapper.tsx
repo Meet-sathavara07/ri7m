@@ -9,7 +9,7 @@ const CardShadowWrapper = ({ children, style }) => {
   // Dynamically create styles based on the current theme
   const dynamicStyles = StyleSheet.create({
     wrapper: {
-      marginHorizontal: 2,
+      marginHorizontal: 4,
       marginBottom: 20,
       borderRadius: 16,
     },

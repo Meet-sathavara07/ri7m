@@ -11,6 +11,10 @@ export default function SettingScreen() {
         title="Go to Account"
         onPress={() => navigation.navigate("Account")}
       />
+      <Button
+        title="Go to Region Selection"
+        onPress={() => navigation.navigate("RegionSelection")}
+      />
     </View>
   );
 }

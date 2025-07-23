@@ -7,6 +7,7 @@ import SearchScreen from "../screens/search/SearchScreen";
 import Recipe from "../native/Recipe";
 import RecipeDetail from "../native/RecipeDetail";
 import { useNavigation } from "expo-router";
+import SearchRecipes from "@/src/components/units/SerachBar/SearchRecipes";
 
 const Stack = createStackNavigator();
 
@@ -53,6 +54,13 @@ const SearchNavigator = forwardRef((props, ref) => {
         name="RecipeDetail" 
         component={RecipeDetail} 
         options={({ route }) => ({ title: route.params?.item?.name || "Recipe Details" })}
+      />
+      <Stack.Screen 
+        name="SearchRecipes" 
+        component={SearchRecipes} 
+        options={{
+          headerShown: false, // Optional: Since we added our own back button
+        }}
       />
     </Stack.Navigator>
   );

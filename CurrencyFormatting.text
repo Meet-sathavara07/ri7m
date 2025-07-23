@@ -1,0 +1,153 @@
+# Currency Formatting Implementation Guide
+
+This guide explains how to implement a comprehensive currency formatting solution across your React Native app. The approach automatically detects the user's region, formats currency appropriately, and allows for manual overrides when needed.
+
+## Architecture Overview
+
+The solution consists of:
+
+1. **Currency Context** - A React Context for app-wide currency state management
+2. **Formatting Hook** - A hook for formatting currency amounts
+3. **Price Display Component** - A reusable component to display prices
+4. **Currency Selector** - A UI component for users to select their preferred currency
+
+## Setup Instructions
+
+### 1. Add the Currency Context to your App
+
+Wrap your app with the `CurrencyProvider` component:
+
+```jsx
+// App.js
+import { CurrencyProvider } from './CurrencyContext';
+
+export default function App() {
+  return (
+    <ThemeProvider>
+      <CurrencyProvider defaultCurrency="USD">
+        <NavigationContainer>
+          <MainNavigator />
+        </NavigationContainer>
+      </CurrencyProvider>
+    </ThemeProvider>
+  );
+}
+```
+
+### 2. Update your BuyButton component
+
+Replace your existing BuyButton with the updated version that uses the currency formatter:
+
+```jsx
+// BuyButton.js
+import { useCurrency } from './CurrencyContext';
+
+const BuyButton = ({ onBuy, price }) => {
+  const { formatPrice } = useCurrency();
+  
+  // Use the formatPrice function to handle currency formatting
+  const formattedPrice = price != null ? formatPrice(price) : "Buy";
+  
+  // Rest of component remains the same...
+};
+```
+
+### 3. Update your PriceBadge component
+
+Replace direct price displays with the currency-aware component:
+
+```jsx
+// In your item component
+<View style={[styles.priceBadge, { backgroundColor: theme.cardBackground }]}>
+  <PriceDisplay 
+    price={item.price}
+    TextComponent={ThemedText}
+    style={styles.priceText}
+  />
+</View>
+```
+
+### 4. Add the Currency Selector to Settings
+
+Add the currency selector component to your settings or profile screen to allow users to choose their preferred currency.
+
+## Usage Examples
+
+### Basic Price Display
+
+```jsx
+import { useCurrency } from './CurrencyContext';
+
+function ProductCard({ product }) {
+  const { formatPrice } = useCurrency();
+  
+  return (
+    <View style={styles.card}>
+      <Image source={product.image} style={styles.image} />
+      <Text style={styles.title}>{product.title}</Text>
+      <Text style={styles.price}>{formatPrice(product.price)}</Text>
+    </View>
+  );
+}
+```
+
+### With Custom Format Options
+
+```jsx
+// No decimal places
+<PriceDisplay 
+  price={item.price} 
+  formatOptions={{ minimumFractionDigits: 0, maximumFractionDigits: 0 }}
+/>
+
+// Always show 2 decimal places
+<PriceDisplay 
+  price={item.price} 
+  formatOptions={{ minimumFractionDigits: 2, maximumFractionDigits: 2 }}
+/>
+```
+
+### Currency Override
+
+```jsx
+// Always show in USD regardless of user's settings
+<PriceDisplay price={item.price} overrideCurrency="USD" />
+```
+
+## Requirements
+
+1. Install the needed dependencies:
+
+```bash
+npm install expo-localization @react-native-async-storage/async-storage
+# or
+yarn add expo-localization @react-native-async-storage/async-storage
+```
+
+## Best Practices
+
+1. **Single Source of Truth**: Use the Currency Context as the single source of truth for all currency formatting
+2. **Performance**: The formatter is optimized to minimize re-renders
+3. **Flexibility**: The API allows for both automatic and manual currency control
+4. **User Experience**: Respect user preferences and provide intuitive controls
+5. **Fallbacks**: The system has sensible fallbacks if formatting fails
+
+## Advanced Features
+
+### Currency Conversion
+
+The current implementation assumes prices in your API are already in the user's currency. If you need to add real-time currency conversion:
+
+1. Integrate with a currency exchange rate API
+2. Update the formatter to apply the conversion rate
+3. Cache exchange rates for performance
+
+### Regional Number Formatting
+
+The implementation automatically formats numbers according to the user's locale:
+
+- US: $1,234.56
+- Germany: 1.234,56 €
+- Japan: ¥1,235
+
+The `Intl.NumberFormat` handles these differences automatically.

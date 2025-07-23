@@ -6,6 +6,7 @@ import AccountScreen from "../native/AccountScreen";
 import SettingScreen from "../native/SettingScreen";
 import { useTheme } from "@/src/Context/ThemeContext";
 import { CommonActions, useNavigation } from "@react-navigation/native";
+import RegionSelectionScreen from "../native/RegionSelectionScreen";
 
 const Stack = createStackNavigator();
 
@@ -40,6 +41,8 @@ const ProfileNavigator = forwardRef((props, ref) => {
       />
       <Stack.Screen name="Settings" component={SettingScreen} />
       <Stack.Screen name="Account" component={AccountScreen} />
+      <Stack.Screen name="RegionSelection" component={RegionSelectionScreen} />
+
     </Stack.Navigator>
   );
 });
