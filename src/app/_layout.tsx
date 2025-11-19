@@ -14,6 +14,7 @@ import { BottomTabSafeAreaProvider } from "../Context/BottomTabSafeAreaProvider"
 import { ThemeProvider, useTheme } from "../Context/ThemeContext";
 import { CurrencyProvider } from "../Context/CurrencyContext";
 import OnboardingNavigator from "./navigation/OnboardingNavigator";
+import "./global.css"
 
 // Create a themed app component
 

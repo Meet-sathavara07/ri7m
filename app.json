@@ -35,7 +35,10 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-font",
+      "expo-localization",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true
@@ -50,6 +53,5 @@
       "url": "https://u.expo.dev/0ee02f8f-01b6-4dd1-bdc5-37608d763797"
     },
     "runtimeVersion": "1.0.0"
-
   }
 }
