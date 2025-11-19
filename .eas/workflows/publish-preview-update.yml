@@ -1,12 +1,92 @@
-name: Publish preview update
+name: Controlled Publish
 
 on:
-  push:
-    branches: ['*']
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Select build type'
+        required: true
+        type: choice
+        options:
+          - 'development'
+          - 'preview'
+          - 'production'
+          - 'live-hotfix'
+      branch:
+        description: 'Branch to build from'
+        required: false
+        default: 'test'
+        type: string
+      publish:
+        description: 'Publish after build?'
+        required: true
+        type: boolean
+        default: false
 
 jobs:
-  publish_preview_update:
-    name: Publish preview update
-    type: update
-    params:
-      branch: ${{ github.ref_name || 'test' }}
+  build_and_publish:
+    name: Build and Publish
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+      
+      - name: Setup environment
+        run: |
+          echo "Build Type: ${{ inputs.build_type }}"
+          echo "Branch: ${{ inputs.branch }}"
+          echo "Will Publish: ${{ inputs.publish }}"
+      
+      # Development build (for native changes)
+      - name: Development Build
+        if: inputs.build_type == 'development'
+        run: |
+          echo "Creating development build..."
+          # Add your development build commands here
+          # Example: npm run build:dev or yarn build:dev
+      
+      # Preview build (for testing)
+      - name: Preview Build
+        if: inputs.build_type == 'preview'
+        run: |
+          echo "Creating preview build..."
+          # Add your preview build commands here
+          # Example: npm run build:preview
+      
+      # Production build (AAB/APK)
+      - name: Production Build
+        if: inputs.build_type == 'production'
+        run: |
+          echo "Creating production AAB..."
+          # Add your production build commands here
+          # Example: npm run build:prod
+      
+      # Live hotfix build (small changes)
+      - name: Live Hotfix Build
+        if: inputs.build_type == 'live-hotfix'
+        run: |
+          echo "Creating hotfix build..."
+          # Add your hotfix build commands here
+          # Example: npm run build:hotfix
+      
+      # Only publish if explicitly requested
+      - name: Publish Update
+        if: inputs.publish == true
+        run: |
+          echo "Publishing ${{ inputs.build_type }} build..."
+          # Add your publish commands here
+          # Example: eas update --branch ${{ inputs.branch }}
+      
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.build_type }}-build
+          path: |
+            build/
+            dist/
+            *.aab
+            *.apk
+          retention-days: 30
