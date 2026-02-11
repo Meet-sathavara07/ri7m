@@ -33,7 +33,7 @@ const ThemedApp = () => {
       }, 1500);
     };
   
-    const handleTabDoublePress = (tabName) => {
+    const handleTabDoublePress = (tabName:any) => {
       if (tabName === "Home" || tabName === "Activity") {
         handleRefresh();
       } else if (tabName === "Profile") {
