@@ -9,7 +9,6 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "versionCode": 3,
       "supportsTablet": true,
       "bundleIdentifier": "com.meetsathavara.ri7m"
     },
