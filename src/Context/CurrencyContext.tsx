@@ -7,9 +7,10 @@ const USER_LOCALE_KEY = 'user_preferred_locale';
 const INITIAL_SETUP_DONE_KEY = 'currency_initial_setup_done';
 
 // Define available currencies with conversion rates (relative to USD)
+// https://open.er-api.com/v6/latest/INR
 export const AVAILABLE_CURRENCIES = [
   { code: 'USD', symbol: '$', name: 'US Dollar', conversionRate: 1 },
-  { code: 'INR', symbol: '₹', name: 'Indian Rupee', conversionRate: 83.11 }, // Example rate as of May 2025
+  { code: 'INR', symbol: '₹', name: 'Indian Rupee', conversionRate: 83.11 }, 
   { code: 'EUR', symbol: '€', name: 'Euro', conversionRate: 0.92 },
   { code: 'GBP', symbol: '£', name: 'British Pound', conversionRate: 0.78 },
   { code: 'JPY', symbol: '¥', name: 'Japanese Yen', conversionRate: 111.32 },
